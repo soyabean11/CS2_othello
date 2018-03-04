@@ -11,7 +11,8 @@ private:
     Board *board;
     Side mySide;
     Side otherSide;
-    int countScore ();
+    int countScore (Board* board_copy);
+    int moveValue(Move *m);
 public:
     Player(Side side);
     ~Player();

@@ -35,9 +35,69 @@ Player::~Player() {
     delete board;
 }
 
+// Checks and returns the value of the heuristic 
+// (#your tokens - #opponent tokens) for the current player's side.
 
-int Player::countScore() {
+int Player::countScore(Board* board_copy) {
+	int score = 0;
+	
+	for (int i = 0; i < 8; ++i)
+	{
+		for (int j = 0; j < 8; ++j)
+		{
+			if (board->occupied(i, j))
+			{
+				if (board->get(mySide, i, j))
+				{
+					score++;
+				}
+				else
+				{
+					score--;
+				}
+			}
+		}
+	}
+	
+	return score;
+	
+}
 
+// Computes the value of a player's heuristic after a move is played
+// on the board
+int Player::moveValue(Move *m){
+	int x = m->getX();
+	int y = m->getY();
+	Board* board_copy = board->copy();
+	board_copy->doMove(m, mySide);
+	int moveScore = countScore(board_copy);
+	
+	//Cases: Move is in corner -> *3
+	//		 Adjacent move is in corner -> *-3
+	//		 On edge -> *2
+	// Should be mutually exclusive events (i.e. not both on edge and
+	// in corner count at same time)
+	// Corner
+	if (((x == 0) || (x == 7)) && ((y == 0) || (y == 7)))
+	{
+		moveScore *= 3;
+	}
+	else if ((((x + 1 == 7) || (x - 1 == 0)) 
+	&& ((y == 0) || (y == 7)))
+	|| (((x == 7) || (x == 0))
+	&& ((y - 1 == 0) || (y + 1 == 7))))
+	{
+		moveScore *= -3;
+	}
+	else if ((x == 0) || (x == 7) || (y == 0) || (y == 7))
+	{
+		moveScore *= 2;
+	}
+	
+	delete board_copy;
+	
+	return moveScore;
+	
 }
 
 
@@ -77,11 +137,11 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
 
     // Loops through the board to find all pieces on Player's side. Possible
     // moves are around such points, and we check all such points.
-    for (int x = 0; i < 8; i++) {
-        for(int y = 0; i < 8; i++) {
+    for (int x = 0; x < 8; x++) {
+        for(int y = 0; y < 8; y++) {
             // If the index corresponds to the Player's piece, we check the
             // four points around it.
-            if board->get(mySide, x, y) {
+            if (board->get(mySide, x, y)) {
                 // Left point.
                 m -> x = x - 2;
                 m -> y = y;
@@ -140,7 +200,7 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
         delete m;
     }
     // Make the chosen move on the
-    board->makeMove(current_best, mySide);
+    board->doMove(current_best, mySide);
 
     return current_best;
 }
