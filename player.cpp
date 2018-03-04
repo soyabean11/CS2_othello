@@ -56,18 +56,18 @@ int Player::moveValue(Move *m){
 	if (moveScore > 0) {
 		if (((x == 0) || (x == 7)) && ((y == 0) || (y == 7)))
 		{
-			moveScore *= 1;
+			moveScore *= 10;
 		}
 		else if ((((x + 1 == 7) || (x - 1 == 0))
 		&& ((y == 0) || (y == 7)))
 		|| (((x == 7) || (x == 0))
 		&& ((y - 1 == 0) || (y + 1 == 7))))
 		{
-			moveScore *= 1;
+			moveScore *= -2;
 		}
 		else if ((x == 0) || (x == 7) || (y == 0) || (y == 7))
 		{
-			moveScore *= 1;
+			moveScore *= 7;
 		}
 	}
 	delete board_copy;
