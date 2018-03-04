@@ -7,6 +7,11 @@
  * within 30 seconds.
  */
  
+ 
+ 
+ 
+ 
+// Making a second change here
 // Testing what happens if two people change stuff
 Player::Player(Side side) {
     // Will be set to true in test_minimax.cpp.
