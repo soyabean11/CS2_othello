@@ -13,6 +13,7 @@ private:
     Side otherSide;
     int countScore (Board* board_copy);
     int moveValue(Move *m);
+    int moveValue_minimax(Move *m);
 public:
     Player(Side side);
     ~Player();

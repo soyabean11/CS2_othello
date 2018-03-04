@@ -14,7 +14,7 @@
 // Testing what happens if two people change stuff
 Player::Player(Side side) {
     // Will be set to true in test_minimax.cpp.
-    testingMinimax = false;
+    testingMinimax = true;
     board = new Board();
     mySide = side;
     if (side == BLACK)
@@ -52,7 +52,7 @@ int Player::moveValue(Move *m){
 	// Should be mutually exclusive events (i.e. not both on edge and
 	// in corner count at same time)
 	// Corner
-	
+
 	if (moveScore > 0) {
 		if (((x == 0) || (x == 7)) && ((y == 0) || (y == 7)))
 		{
@@ -72,9 +72,72 @@ int Player::moveValue(Move *m){
 	}
 	delete board_copy;
 
-	return moveScore;		
+	return moveScore;
 }
 
+int Player::moveValue_minimax(Move *m1) {
+    Board* new_board = board->copy();
+
+     /* Pass if there are no available moves. */
+    new_board -> doMove(m1, mySide);
+
+    if (!new_board->hasMoves(otherSide)) {
+        return countScore(new_board);
+    }
+
+    Move *m = new Move(0, 0);
+    // Dummy score that is impossible.
+    int current_score = 2000;
+    int temp;
+
+    // Loops through the board to find all pieces on Player's side. Possible
+    // moves are around such points, and we check all such points.
+    for (int x = 0; x < 8; x++) {
+        for(int y = 0; y < 8; y++) {
+            m -> setX(x);
+            m -> setY(y);
+            if(new_board->checkMove(m, otherSide)) {
+                // Checking if the move is better than the current
+                // known best move.
+                Board *move_board = new_board -> copy();
+                move_board -> doMove(m, otherSide);
+                temp = countScore(move_board);
+                delete move_board;
+                if (temp < current_score) {
+                        current_score = temp;
+                }
+            }
+        }
+    }
+
+    delete m;
+    delete new_board;
+
+    int x = m1->getX();
+    int y = m1->getY();
+
+    int moveScore = current_score;
+
+    if (moveScore > 0) {
+        if (((x == 0) || (x == 7)) && ((y == 0) || (y == 7)))
+        {
+            moveScore *= 10;
+        }
+        else if ((((x + 1 == 7) || (x - 1 == 0))
+        && ((y == 0) || (y == 7)))
+        || (((x == 7) || (x == 0))
+        && ((y - 1 == 0) || (y + 1 == 7))))
+        {
+            moveScore *= -2;
+        }
+        else if ((x == 0) || (x == 7) || (y == 0) || (y == 7))
+        {
+            moveScore *= 7;
+        }
+    }
+
+    return moveScore;
+}
 
 /*
  * Compute the next move given the opponent's last move. Your AI is
@@ -120,7 +183,7 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
             if(board->checkMove(m, mySide)) {
                 // Checking if the move is better than the current
                 // known best move.
-                temp = moveValue(m);
+                temp = moveValue_minimax(m);
                 if (temp > current_score) {
                         current_score = temp;
                         current_best->setX(m->getX());
