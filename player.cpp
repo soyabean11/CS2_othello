@@ -21,15 +21,6 @@ Player::Player(Side side) {
         otherSide = WHITE;
     else
         otherSide = BLACK;
-    
-    if (mySide == BLACK)
-    {
-		std::cerr << "Black" << std::endl;
-	}
-	else
-	{
-		std::cerr << "White" << std::endl;
-	}
 }
 
 /*
@@ -43,28 +34,7 @@ Player::~Player() {
 // (#your tokens - #opponent tokens) for the current player's side.
 
 int Player::countScore(Board* board_copy) {
-	int score = 0;
-
-	for (int i = 0; i < 8; ++i)
-	{
-		for (int j = 0; j < 8; ++j)
-		{
-			if (board->occupied(i, j))
-			{
-				if (board->get(mySide, i, j))
-				{
-					score++;
-				}
-				else
-				{
-					score--;
-				}
-			}
-		}
-	}
-
-	return score;
-
+	return board_copy->count(mySide) - board_copy->count(otherSide);
 }
 
 // Computes the value of a player's heuristic after a move is played
@@ -82,26 +52,27 @@ int Player::moveValue(Move *m){
 	// Should be mutually exclusive events (i.e. not both on edge and
 	// in corner count at same time)
 	// Corner
-	if (((x == 0) || (x == 7)) && ((y == 0) || (y == 7)))
-	{
-		moveScore *= 3;
+	
+	if (moveScore > 0) {
+		if (((x == 0) || (x == 7)) && ((y == 0) || (y == 7)))
+		{
+			moveScore *= 1;
+		}
+		else if ((((x + 1 == 7) || (x - 1 == 0))
+		&& ((y == 0) || (y == 7)))
+		|| (((x == 7) || (x == 0))
+		&& ((y - 1 == 0) || (y + 1 == 7))))
+		{
+			moveScore *= 1;
+		}
+		else if ((x == 0) || (x == 7) || (y == 0) || (y == 7))
+		{
+			moveScore *= 1;
+		}
 	}
-	else if ((((x + 1 == 7) || (x - 1 == 0))
-	&& ((y == 0) || (y == 7)))
-	|| (((x == 7) || (x == 0))
-	&& ((y - 1 == 0) || (y + 1 == 7))))
-	{
-		moveScore *= -2;
-	}
-	else if ((x == 0) || (x == 7) || (y == 0) || (y == 7))
-	{
-		moveScore *= 2;
-	}
-
 	delete board_copy;
 
-	return moveScore;
-
+	return moveScore;		
 }
 
 
