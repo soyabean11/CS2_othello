@@ -16,6 +16,23 @@ Player::Player(Side side) {
     // Will be set to true in test_minimax.cpp.
     testingMinimax = true;
     board = new Board();
+
+    // code for testing minimax
+    /*
+
+    char boardData[64] = {
+        ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
+        ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
+        ' ', 'b', ' ', ' ', ' ', ' ', ' ', ' ',
+        'b', 'w', 'b', 'b', 'b', 'b', ' ', ' ',
+        ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
+        ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
+        ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
+        ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '
+    };
+
+
+    board ->setBoard(boardData); */
     mySide = side;
     if (side == BLACK)
         otherSide = WHITE;
@@ -37,44 +54,57 @@ int Player::countScore(Board* board_copy) {
 	return board_copy->count(mySide) - board_copy->count(otherSide);
 }
 
-// Computes the value of a player's heuristic after a move is played
-// on the board
+
+
+int Player::heuristic_multiplier(Move *m) {
+    //Cases: Move is in corner -> *3
+    //       Adjacent move is in corner -> *-3
+    //       On edge -> *2
+    // Should be mutually exclusive events (i.e. not both on edge and
+    // in corner count at same time)
+    // Corner
+    int x = m->getX();
+    int y = m->getY();
+
+    // Corners
+    if (((x == 0) || (x == 7)) && ((y == 0) || (y == 7)))
+    {
+        return 5;
+    }
+    // Cells adjacent to corners
+    else if ((((x + 1 == 7) || (x - 1 == 0))
+    && ((y == 0) || (y == 7)))
+    || (((x == 7) || (x == 0))
+    && ((y - 1 == 0) || (y + 1 == 7))))
+    {
+        return -1;
+    }
+    // Other cells on the edges
+    else if ((x == 0) || (x == 7) || (y == 0) || (y == 7))
+    {
+        return 3;
+    }
+    // Nothing special
+    return 1;
+}
+
+// Computes the value of a player's move for the heauristic method.
 int Player::moveValue(Move *m){
-	int x = m->getX();
-	int y = m->getY();
+
 	Board* board_copy = board->copy();
 	board_copy->doMove(m, mySide);
 	int moveScore = countScore(board_copy);
 
-	//Cases: Move is in corner -> *3
-	//		 Adjacent move is in corner -> *-3
-	//		 On edge -> *2
-	// Should be mutually exclusive events (i.e. not both on edge and
-	// in corner count at same time)
-	// Corner
+    if (moveScore > 0) {
+        moveScore *= heuristic_multiplier(m);
+    }
 
-	if (moveScore > 0) {
-		if (((x == 0) || (x == 7)) && ((y == 0) || (y == 7)))
-		{
-			moveScore *= 10;
-		}
-		else if ((((x + 1 == 7) || (x - 1 == 0))
-		&& ((y == 0) || (y == 7)))
-		|| (((x == 7) || (x == 0))
-		&& ((y - 1 == 0) || (y + 1 == 7))))
-		{
-			moveScore *= -2;
-		}
-		else if ((x == 0) || (x == 7) || (y == 0) || (y == 7))
-		{
-			moveScore *= 7;
-		}
-	}
 	delete board_copy;
 
 	return moveScore;
 }
 
+// Computes the value of a player's move for minimax.
 int Player::moveValue_minimax(Move *m1) {
     Board* new_board = board->copy();
 
@@ -110,32 +140,15 @@ int Player::moveValue_minimax(Move *m1) {
         }
     }
 
+
     delete m;
     delete new_board;
 
-    int x = m1->getX();
-    int y = m1->getY();
-
     int moveScore = current_score;
 
-    if (moveScore > 0) {
-        if (((x == 0) || (x == 7)) && ((y == 0) || (y == 7)))
-        {
-            moveScore *= 10;
-        }
-        else if ((((x + 1 == 7) || (x - 1 == 0))
-        && ((y == 0) || (y == 7)))
-        || (((x == 7) || (x == 0))
-        && ((y - 1 == 0) || (y + 1 == 7))))
-        {
-            moveScore *= -2;
-        }
-        else if ((x == 0) || (x == 7) || (y == 0) || (y == 7))
-        {
-            moveScore *= 7;
-        }
-    }
-
+    /*if (moveScore > 0) {
+        moveScore *= heuristic_multiplier(m);
+    } */
     return moveScore;
 }
 
@@ -161,6 +174,8 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
     /* Making the opponents move on the Player's copy of board. */
     board -> doMove(opponentsMove, otherSide);
 
+
+
     /* Pass if there are no available moves. */
     if (!board->hasMoves(mySide)) {
         return nullptr;
@@ -183,7 +198,13 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
             if(board->checkMove(m, mySide)) {
                 // Checking if the move is better than the current
                 // known best move.
-                temp = moveValue_minimax(m);
+                if (testingMinimax) {
+                    temp = moveValue_minimax(m);
+                }
+                else {
+                    temp = moveValue(m);
+                }
+
                 if (temp > current_score) {
                         current_score = temp;
                         current_best->setX(m->getX());
@@ -197,6 +218,9 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
 
     // Make the chosen move on the
     board->doMove(current_best, mySide);
+
+    Board* board_copy = board->copy();
+    delete board_copy;
 
     return current_best;
 }
