@@ -21,11 +21,15 @@ Player::Player(Side side) {
         otherSide = WHITE;
     else
         otherSide = BLACK;
-    /*
-     * TODO: Do any initialization you need to do here (setting up the board,
-     * precalculating things, etc.) However, remember that you will only have
-     * 30 seconds.
-     */
+    
+    if (mySide == BLACK)
+    {
+		std::cerr << "Black" << std::endl;
+	}
+	else
+	{
+		std::cerr << "White" << std::endl;
+	}
 }
 
 /*
@@ -87,7 +91,7 @@ int Player::moveValue(Move *m){
 	|| (((x == 7) || (x == 0))
 	&& ((y - 1 == 0) || (y + 1 == 7))))
 	{
-		moveScore *= -3;
+		moveScore *= -2;
 	}
 	else if ((x == 0) || (x == 7) || (y == 0) || (y == 7))
 	{
@@ -140,8 +144,8 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
     // moves are around such points, and we check all such points.
     for (int x = 0; x < 8; x++) {
         for(int y = 0; y < 8; y++) {
-            m -> x = x;
-            m -> y = y;
+            m -> setX(x);
+            m -> setY(y);
             if(board->checkMove(m, mySide)) {
                 // Checking if the move is better than the current
                 // known best move.
