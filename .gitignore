@@ -2,3 +2,4 @@
 *.class
 *.swp
 testgame
+.DS_Store
