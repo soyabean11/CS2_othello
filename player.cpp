@@ -35,12 +35,12 @@ Player::~Player() {
     delete board;
 }
 
-// Checks and returns the value of the heuristic 
+// Checks and returns the value of the heuristic
 // (#your tokens - #opponent tokens) for the current player's side.
 
 int Player::countScore(Board* board_copy) {
 	int score = 0;
-	
+
 	for (int i = 0; i < 8; ++i)
 	{
 		for (int j = 0; j < 8; ++j)
@@ -58,9 +58,9 @@ int Player::countScore(Board* board_copy) {
 			}
 		}
 	}
-	
+
 	return score;
-	
+
 }
 
 // Computes the value of a player's heuristic after a move is played
@@ -71,7 +71,7 @@ int Player::moveValue(Move *m){
 	Board* board_copy = board->copy();
 	board_copy->doMove(m, mySide);
 	int moveScore = countScore(board_copy);
-	
+
 	//Cases: Move is in corner -> *3
 	//		 Adjacent move is in corner -> *-3
 	//		 On edge -> *2
@@ -82,7 +82,7 @@ int Player::moveValue(Move *m){
 	{
 		moveScore *= 3;
 	}
-	else if ((((x + 1 == 7) || (x - 1 == 0)) 
+	else if ((((x + 1 == 7) || (x - 1 == 0))
 	&& ((y == 0) || (y == 7)))
 	|| (((x == 7) || (x == 0))
 	&& ((y - 1 == 0) || (y + 1 == 7))))
@@ -93,11 +93,11 @@ int Player::moveValue(Move *m){
 	{
 		moveScore *= 2;
 	}
-	
+
 	delete board_copy;
-	
+
 	return moveScore;
-	
+
 }
 
 
@@ -131,6 +131,7 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
     Move *m = new Move(0, 0);
     // Dummy score that is impossible.
     int current_score = -1000;
+    int temp;
     // Temporary move - guaranteed to be updated since we know there exists
     // at least one possible move.
     Move *current_best = new Move(0, 0);
@@ -139,66 +140,23 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
     // moves are around such points, and we check all such points.
     for (int x = 0; x < 8; x++) {
         for(int y = 0; y < 8; y++) {
-            // If the index corresponds to the Player's piece, we check the
-            // four points around it.
-            if (board->get(mySide, x, y)) {
-                // Left point.
-                m -> x = x - 2;
-                m -> y = y;
-                // Checking if it is a valid index.
-                if (board->checkMove(m, mySide)) {
-                    // Checking if the move is better than the current
-                    // known best move.
-                    if (moveValue(m) > current_score) {
-                        current_score = moveValue(m);
-                        current_best = m;
-                    }
+            m -> x = x;
+            m -> y = y;
+            if(board->checkMove(m, mySide)) {
+                // Checking if the move is better than the current
+                // known best move.
+                temp = moveValue(m);
+                if (temp > current_score) {
+                        current_score = temp;
+                        current_best->setX(m->getX());
+                        current_best->setY(m->getY());
                 }
-                // Right point.
-                m -> x = x + 2;
-                m -> y = y;
-                // Checking if it is a valid index.
-                if (board->checkMove(m, mySide)) {
-                    // Checking if the move is better than the current
-                    // known best move.
-                    if (moveValue(m) > current_score) {
-                        current_score = moveValue(m);
-                        current_best = m;
-                    }
-                }
-                // Bottom point.
-                m -> x = x;
-                m -> y = y - 2;
-                // Checking if it is a valid index.
-                if (board->checkMove(m, mySide)) {
-                    // Checking if the move is better than the current
-                    // known best move.
-                    if (moveValue(m) > current_score) {
-                        current_score = moveValue(m);
-                        current_best = m;
-                    }
-                }
-                // Top point.
-                m -> x = x;
-                m -> y = y + 2;
-                // Checking if it is a valid index.
-                if (board->checkMove(m, mySide)) {
-                    // Checking if the move is better than the current
-                    // known best move.
-                    if (moveValue(m) > current_score) {
-                        current_score = moveValue(m);
-                        current_best = m;
-                    }
-                }
-
             }
         }
     }
 
-    // If the two pointers are not shared, we delete m.
-    if (m != current_best) {
-        delete m;
-    }
+    delete m;
+
     // Make the chosen move on the
     board->doMove(current_best, mySide);
 
