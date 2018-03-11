@@ -11,6 +11,7 @@ private:
     Board *board;
     Side mySide;
     Side otherSide;
+    bool minimax_on;
     int countScore (Board* board_copy);
     int moveValue(Move *m);
     int moveValue_minimax(Move *m1);

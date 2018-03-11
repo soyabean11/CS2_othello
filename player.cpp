@@ -14,12 +14,15 @@
 // Testing what happens if two people change stuff
 Player::Player(Side side) {
     // Will be set to true in test_minimax.cpp.
-    testingMinimax = true;
+    minimax_on = true;
+    testingMinimax = false;
     board = new Board();
+    
+    std::cerr << "Color: " << side << std::endl;
 
     // code for testing minimax
     /*
-
+	
     char boardData[64] = {
         ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
         ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
@@ -71,14 +74,20 @@ int Player::heuristic_multiplier(Move *m) {
     {
         return 5;
     }
-    // Cells adjacent to corners
+    // Cells adjacent to corners (non-diagonal)
     else if ((((x + 1 == 7) || (x - 1 == 0))
     && ((y == 0) || (y == 7)))
     || (((x == 7) || (x == 0))
-    && ((y - 1 == 0) || (y + 1 == 7))))
+    && ((y - 1 == 0) || (y + 1 == 7)))) 
     {
         return -1;
     }
+    // Cells adjacent to corners on the diagonal
+    else if (((y + 1 == 7) && ((x - 1 == 0) || (x + 1 == 7))) 
+    || ((y - 1 == 0) && ((x - 1 == 0) || (x + 1 == 7))))
+    {
+		return -2;
+	}
     // Other cells on the edges
     else if ((x == 0) || (x == 7) || (y == 0) || (y == 7))
     {
@@ -198,7 +207,7 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
             if(board->checkMove(m, mySide)) {
                 // Checking if the move is better than the current
                 // known best move.
-                if (testingMinimax) {
+                if (minimax_on) {
                     temp = moveValue_minimax(m);
                 }
                 else {
