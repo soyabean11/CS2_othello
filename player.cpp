@@ -75,7 +75,7 @@ int Player::heuristic_multiplier(Move *m) {
     // Corners
     if (((x == 0) || (x == 7)) && ((y == 0) || (y == 7)))
     {
-        return 5;
+        return 10;
     }
     // Cells adjacent to corners (non-diagonal)
     else if ((((x + 1 == 7) || (x - 1 == 0))
@@ -83,18 +83,18 @@ int Player::heuristic_multiplier(Move *m) {
     || (((x == 7) || (x == 0))
     && ((y - 1 == 0) || (y + 1 == 7))))
     {
-        return -1;
+        return -5;
     }
     // Cells adjacent to corners on the diagonal
     else if (((y + 1 == 7) && ((x - 1 == 0) || (x + 1 == 7)))
     || ((y - 1 == 0) && ((x - 1 == 0) || (x + 1 == 7))))
     {
-		return -2;
+		return -10;
 	}
     // Other cells on the edges
     else if ((x == 0) || (x == 7) || (y == 0) || (y == 7))
     {
-        return 3;
+        return 5;
     }
     // Nothing special
     return 1;
@@ -127,7 +127,7 @@ int Player::moveValue_minimax(Move *m1) {
         return countScore(new_board);
     }
 
-    Move *m = new Move(0, 0);
+    Move *m = new Move(1, 1);
     // Dummy score that is impossible.
     int current_score = 2000;
     int temp;
@@ -195,7 +195,7 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
 
     Move *m = new Move(0, 0);
     // Dummy score that is impossible.
-    int current_score = -1000;
+    int current_score = -2000;
     int temp;
     // Temporary move - guaranteed to be updated since we know there exists
     // at least one possible move.
@@ -210,12 +210,12 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
             if(board->checkMove(m, mySide)) {
                 // Checking if the move is better than the current
                 // known best move.
-                temp = minimax (m, board, 2, mySide);
+                temp = minimax (m, board, 4, mySide);
 
                 if (temp > current_score) {
-                        current_score = temp;
-                        current_best->setX(m->getX());
-                        current_best->setY(m->getY());
+                    current_score = temp + heuristic_multiplier(m);
+                    current_best->setX(m->getX());
+                    current_best->setY(m->getY());
                 }
             }
         }
@@ -231,53 +231,54 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
     return current_best;
 }
 
-int Player::score(Move *m, Board *b, Side current) {
+int Player::score(Move *m, Board *b) {
     int temp = countScore(b);
-    if (current == mySide)
-        if (temp > 0) {
-            return temp * heuristic_multiplier(m);
-        }
-        else {
-            return temp;
-        }
-    else {
-        if (temp < 0) {
-            return -1 * temp * heuristic_multiplier(m);
-        }
-        else {
-            return -1 * temp;
-        }
+
+    if (temp > 0) {
+        return temp * heuristic_multiplier(m);
     }
+    else {
+        return temp;
+    }
+    /*
+    if (temp > 0) {
+        return temp * heuristic_multiplier(m);
+    }
+    else {
+        return temp;
+    } */
 }
 
 int Player::minimax(Move *move, Board *b, int depth, Side current) {
 
 	if (depth == 0) {
-		int temp = score(move, b, current);
+		int temp = score(move, b);
         return temp;
 	}
 
 	Side other;
-	if (current == WHITE) 	
+	if (current == WHITE)
 		other = BLACK;
-	else 
+	else
 		other = WHITE;
-		
+
     Board *next_board = board->copy();
     next_board->doMove(move, current);
 
     if (!board->hasMoves(other)) {
-        return minimax(nullptr, next_board, depth - 1, other);
+        int temp = score(move, b);
+        return temp;
+        //return minimax(nullptr, next_board, depth - 1, other);
     }
 
     Move *m = new Move(0, 0);
     // Dummy score that is impossible.
     int current_score;
-    
+
     if (current == mySide)
-        current_score = -1000;
+        current_score = -3000;
     else
-        current_score = 1000;
+        current_score = 3000;
 
 
     int temp;
