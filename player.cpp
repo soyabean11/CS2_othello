@@ -57,7 +57,47 @@ int Player::countScore(Board* board_copy) {
 	return board_copy->count(mySide) - board_copy->count(otherSide);
 }
 
+bool check_corner(int x, int y)
+{
+	if (((x == 0) || (x == 7)) && ((y == 0) || (y == 7)))
+	{
+		return 1;
+	}
+	else
+	{
+		return 0;
+	}
+}
 
+bool corner_adjacent_nondiag(int x, int y)
+{
+	if ((((x + 1 == 7) || (x - 1 == 0))
+    && ((y == 0) || (y == 7)))
+    || (((x == 7) || (x == 0))
+    && ((y - 1 == 0) || (y + 1 == 7))))
+    {
+		return 1;
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+bool corner_adjacent_diag(int x, int y)
+{
+	if (((y + 1 == 7) && ((x - 1 == 0) || (x + 1 == 7)))
+    || ((y - 1 == 0) && ((x - 1 == 0) || (x + 1 == 7))))
+	{
+		return 1;
+	}
+	return 0;
+}
+
+bool edges(int x, int y)
+{
+	if ((x == 0) || (x == 7) || (y == 0) || (y == 7));
+}
 
 int Player::heuristic_multiplier(Move *m) {
     //Cases: Move is in corner -> *3
@@ -65,39 +105,71 @@ int Player::heuristic_multiplier(Move *m) {
     //       On edge -> *2
     // Should be mutually exclusive events (i.e. not both on edge and
     // in corner count at same time)
+    // More cases:
+    // If corner is taken, then moves near corner are good.
     // Corner
     if (m == nullptr) {
         return 1;
     }
     int x = m->getX();
     int y = m->getY();
-
-    // Corners
-    if (((x == 0) || (x == 7)) && ((y == 0) || (y == 7)))
-    {
-        return 20;
-    }
-    // Cells adjacent to corners (non-diagonal)
-    else if ((((x + 1 == 7) || (x - 1 == 0))
-    && ((y == 0) || (y == 7)))
-    || (((x == 7) || (x == 0))
-    && ((y - 1 == 0) || (y + 1 == 7))))
-    {
-        return -5;
-    }
-    // Cells adjacent to corners on the diagonal
-    else if (((y + 1 == 7) && ((x - 1 == 0) || (x + 1 == 7)))
-    || ((y - 1 == 0) && ((x - 1 == 0) || (x + 1 == 7))))
-    {
-		return -15;
+    
+    // If the corner is occupied by either color, then nearby nondiag
+    // squares are not bad anymore.
+	if (board->occupied(0, 0))
+	{
+		if (((x - 1 == 0) && (y == 0)) || ((y - 1 == 0) && (x == 0)))
+		{
+			return 2;
+		}
 	}
-    // Other cells on the edges
-    else if ((x == 0) || (x == 7) || (y == 0) || (y == 7))
-    {
-        return 10;
-    }
-    // Nothing special
-    return 1;
+	else if (board->occupied(7, 7))
+	{
+		if (((x + 1 == 7) && (y == 7)) || ((y + 1 == 7) && (x == 7)))
+		{
+			return 2;
+		}
+	}
+	else if (board->occupied(0, 7))
+	{
+		if (((x - 1 == 0) && (y == 7)) || ((y + 1 == 7) && (x == 7)))
+		{
+			return 2;
+		}
+	}
+	else if (board->occupied(7, 0))
+	{
+		if (((x + 1 == 7) && (y == 0)) || ((y - 1 == 0) && (x == 7)))
+		{
+			return 2;
+		}
+	}
+	// If the corner is not occupied, proceed with regular heuristics.
+	else
+	{
+		// Corners
+		if (check_corner(x, y))
+		{
+			return 9;
+		}
+		// Cells adjacent to corners (non-diagonal)
+		else if (corner_adjacent_nondiag(x, y))
+		{
+			return -8;
+		}
+		// Cells adjacent to corners on the diagonal
+		else if (corner_adjacent_diag(x, y))
+		{
+			return -12;
+		}
+		// Other cells on the edges
+		else if (edges(x, y))
+		{
+			return 7;
+		}
+		// Nothing special
+		return 1;
+	}
 }
 
 /*
@@ -135,7 +207,7 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
     int temp;
     // Temporary move - guaranteed to be updated since we know there exists
     // at least one possible move.
-    Move *current_best = new Move(1, 1);
+    Move *current_best = new Move(0, 0);
 
     // Loops through the board to find all pieces on Player's side. Possible
     // moves are around such points, and we check all such points.
@@ -186,11 +258,12 @@ int Player::minimax(Move *move, Board *b, int depth, Side current) {
 
     if (!next_board->hasMoves(other)) {
         int temp = countScore(b);
+        delete next_board;
         return temp;
         //return minimax(nullptr, next_board, depth - 1, other);
     }
 
-    Move *m = new Move(1, 1);
+    Move *m = new Move(0, 0);
     // Dummy score that is impossible.
     int current_score;
 
@@ -221,6 +294,7 @@ int Player::minimax(Move *move, Board *b, int depth, Side current) {
             }
         }
     }
-
+	delete m;
+	delete next_board;
     return current_score;
 }
