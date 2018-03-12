@@ -75,7 +75,7 @@ int Player::heuristic_multiplier(Move *m) {
     // Corners
     if (((x == 0) || (x == 7)) && ((y == 0) || (y == 7)))
     {
-        return 10;
+        return 20;
     }
     // Cells adjacent to corners (non-diagonal)
     else if ((((x + 1 == 7) || (x - 1 == 0))
@@ -89,12 +89,12 @@ int Player::heuristic_multiplier(Move *m) {
     else if (((y + 1 == 7) && ((x - 1 == 0) || (x + 1 == 7)))
     || ((y - 1 == 0) && ((x - 1 == 0) || (x + 1 == 7))))
     {
-		return -10;
+		return -15;
 	}
     // Other cells on the edges
     else if ((x == 0) || (x == 7) || (y == 0) || (y == 7))
     {
-        return 5;
+        return 10;
     }
     // Nothing special
     return 1;
@@ -149,7 +149,7 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
                 temp = minimax (m, board, 5, mySide);
 
                 if (temp > current_score) {
-                    current_score = temp * heuristic_multiplier(m);
+                    current_score = temp + heuristic_multiplier(m);
                     current_best->setX(m->getX());
                     current_best->setY(m->getY());
                 }
