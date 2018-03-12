@@ -100,70 +100,6 @@ int Player::heuristic_multiplier(Move *m) {
     return 1;
 }
 
-// Computes the value of a player's move for the heauristic method.
-int Player::moveValue(Move *m){
-
-	Board* board_copy = board->copy();
-	board_copy->doMove(m, mySide);
-	int moveScore = countScore(board_copy);
-
-    if (moveScore > 0) {
-        moveScore *= heuristic_multiplier(m);
-    }
-
-	delete board_copy;
-
-	return moveScore;
-}
-
-// Computes the value of a player's move for minimax.
-int Player::moveValue_minimax(Move *m1) {
-    Board* new_board = board->copy();
-
-     /* Pass if there are no available moves. */
-    new_board -> doMove(m1, mySide);
-
-    if (!new_board->hasMoves(otherSide)) {
-        return countScore(new_board);
-    }
-
-    Move *m = new Move(1, 1);
-    // Dummy score that is impossible.
-    int current_score = 2000;
-    int temp;
-
-    // Loops through the board to find all pieces on Player's side. Possible
-    // moves are around such points, and we check all such points.
-    for (int x = 0; x < 8; x++) {
-        for(int y = 0; y < 8; y++) {
-            m -> setX(x);
-            m -> setY(y);
-            if(new_board->checkMove(m, otherSide)) {
-                // Checking if the move is better than the current
-                // known best move.
-                Board *move_board = new_board -> copy();
-                move_board -> doMove(m, otherSide);
-                temp = countScore(move_board);
-                delete move_board;
-                if (temp < current_score) {
-                        current_score = temp;
-                }
-            }
-        }
-    }
-
-
-    delete m;
-    delete new_board;
-
-    int moveScore = current_score;
-
-    /*if (moveScore > 0) {
-        moveScore *= heuristic_multiplier(m);
-    } */
-    return moveScore;
-}
-
 /*
  * Compute the next move given the opponent's last move. Your AI is
  * expected to keep track of the board on its own. If this is the first move,
@@ -199,7 +135,7 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
     int temp;
     // Temporary move - guaranteed to be updated since we know there exists
     // at least one possible move.
-    Move *current_best = new Move(0, 0);
+    Move *current_best = new Move(1, 1);
 
     // Loops through the board to find all pieces on Player's side. Possible
     // moves are around such points, and we check all such points.
@@ -210,10 +146,10 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
             if(board->checkMove(m, mySide)) {
                 // Checking if the move is better than the current
                 // known best move.
-                temp = minimax (m, board, 4, mySide);
+                temp = minimax (m, board, 5, mySide);
 
                 if (temp > current_score) {
-                    current_score = temp + heuristic_multiplier(m);
+                    current_score = temp * heuristic_multiplier(m);
                     current_best->setX(m->getX());
                     current_best->setY(m->getY());
                 }
@@ -231,28 +167,11 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
     return current_best;
 }
 
-int Player::score(Move *m, Board *b) {
-    int temp = countScore(b);
-
-    if (temp > 0) {
-        return temp * heuristic_multiplier(m);
-    }
-    else {
-        return temp;
-    }
-    /*
-    if (temp > 0) {
-        return temp * heuristic_multiplier(m);
-    }
-    else {
-        return temp;
-    } */
-}
 
 int Player::minimax(Move *move, Board *b, int depth, Side current) {
 
 	if (depth == 0) {
-		int temp = score(move, b);
+		int temp = countScore(b);
         return temp;
 	}
 
@@ -265,13 +184,13 @@ int Player::minimax(Move *move, Board *b, int depth, Side current) {
     Board *next_board = board->copy();
     next_board->doMove(move, current);
 
-    if (!board->hasMoves(other)) {
-        int temp = score(move, b);
+    if (!next_board->hasMoves(other)) {
+        int temp = countScore(b);
         return temp;
         //return minimax(nullptr, next_board, depth - 1, other);
     }
 
-    Move *m = new Move(0, 0);
+    Move *m = new Move(1, 1);
     // Dummy score that is impossible.
     int current_score;
 
