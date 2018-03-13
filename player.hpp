@@ -13,7 +13,7 @@ private:
     Side otherSide;
     bool minimax_on;
     int countScore (Board* board_copy);
-    int heuristic_multiplier(Move *m);
+    int heuristic_multiplier(Move *m, Board *temp);
     int minimax(Move *move, Board *b, int depth, Side current);
 public:
     Player(Side side);

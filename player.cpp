@@ -96,10 +96,10 @@ bool corner_adjacent_diag(int x, int y)
 
 bool edges(int x, int y)
 {
-	if ((x == 0) || (x == 7) || (y == 0) || (y == 7));
+	return ((x == 0) || (x == 7) || (y == 0) || (y == 7));
 }
 
-int Player::heuristic_multiplier(Move *m) {
+int Player::heuristic_multiplier(Move *m, Board *temp) {
     //Cases: Move is in corner -> *3
     //       Adjacent move is in corner -> *-3
     //       On edge -> *2
@@ -116,28 +116,28 @@ int Player::heuristic_multiplier(Move *m) {
     
     // If the corner is occupied by either color, then nearby nondiag
     // squares are not bad anymore.
-	if (board->occupied(0, 0))
+	if (temp->occupied(0, 0))
 	{
 		if (((x - 1 == 0) && (y == 0)) || ((y - 1 == 0) && (x == 0)))
 		{
 			return 2;
 		}
 	}
-	else if (board->occupied(7, 7))
+	else if (temp->occupied(7, 7))
 	{
 		if (((x + 1 == 7) && (y == 7)) || ((y + 1 == 7) && (x == 7)))
 		{
 			return 2;
 		}
 	}
-	else if (board->occupied(0, 7))
+	else if (temp->occupied(0, 7))
 	{
 		if (((x - 1 == 0) && (y == 7)) || ((y + 1 == 7) && (x == 7)))
 		{
 			return 2;
 		}
 	}
-	else if (board->occupied(7, 0))
+	else if (temp->occupied(7, 0))
 	{
 		if (((x + 1 == 7) && (y == 0)) || ((y - 1 == 0) && (x == 7)))
 		{
@@ -150,7 +150,7 @@ int Player::heuristic_multiplier(Move *m) {
 		// Corners
 		if (check_corner(x, y))
 		{
-			return 9;
+			return 15;
 		}
 		// Cells adjacent to corners (non-diagonal)
 		else if (corner_adjacent_nondiag(x, y))
@@ -160,16 +160,16 @@ int Player::heuristic_multiplier(Move *m) {
 		// Cells adjacent to corners on the diagonal
 		else if (corner_adjacent_diag(x, y))
 		{
-			return -12;
+			return -10;
 		}
 		// Other cells on the edges
 		else if (edges(x, y))
 		{
 			return 7;
 		}
-		// Nothing special
-		return 1;
 	}
+	// Nothing special
+	return 0;
 }
 
 /*
@@ -218,10 +218,13 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
             if(board->checkMove(m, mySide)) {
                 // Checking if the move is better than the current
                 // known best move.
-                temp = minimax (m, board, 5, mySide);
+                temp = minimax (m, board, 4, mySide);
 
                 if (temp > current_score) {
-                    current_score = temp + heuristic_multiplier(m);
+					Board *temp_board = board->copy();
+                    current_score = temp 
+						+ heuristic_multiplier(m, temp_board);
+                    delete temp_board;
                     current_best->setX(m->getX());
                     current_best->setY(m->getY());
                 }
