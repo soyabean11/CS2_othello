@@ -5,5 +5,3 @@ We worked on the pseudocode together on paper, and we split up the functions tha
 Q: Document the improvements that your group made to your AI to make it tournament worthy. Explain why you think your strategy(s) will work. Feel free to discuss any ideas that were tried but didn't work.
 
 1) Stable discs - we were not able to generalise the stable discs strategy, but we improved on our heuristic to account for the fact that squares adjacent to corners are fine when the corner is filled. This was a huge over sight in the initial heuristic that just gave a negative value to such a move.
-
-2) FRONTIERS

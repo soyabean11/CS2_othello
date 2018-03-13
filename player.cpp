@@ -218,7 +218,7 @@ Move *Player::doMove(Move *opponentsMove, int msLeft) {
             if(board->checkMove(m, mySide)) {
                 // Checking if the move is better than the current
                 // known best move.
-                temp = minimax (m, board, 4, mySide);
+                temp = minimax (m, board, 5, mySide);
 
                 if (temp > current_score) {
 					Board *temp_board = board->copy();
